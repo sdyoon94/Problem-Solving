@@ -4,7 +4,7 @@ using namespace std;
 
 void reverse(char* str, int len){
     len--;
-    for(int i=0; i<len/2; i++){
+    for(int i=0; i<=len/2; i++){
         char tmp=str[i];
         str[i]=str[len-i];
         str[len-i]=tmp;

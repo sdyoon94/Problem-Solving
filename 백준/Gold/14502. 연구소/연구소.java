@@ -1,13 +1,12 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
 public class Main {
     private static int ans = 0, N, M, max;
-    private static int[][] map;
+    private static int[][] map, copyMap;
     private static int[] dc = {0, -1, 0, 1}, dr = {-1, 0, 1, 0};
 
     public static void main(String[] args) throws Exception {
@@ -17,6 +16,7 @@ public class Main {
         M = Integer.parseInt(st.nextToken());
         max = N * M;
         map = new int[N + 2][M + 2];
+        copyMap = new int[N + 2][M + 2];
         for (int i = 0; i < N + 2; i++) {
             map[i][0] = 1;
             map[i][M + 1] = 1;
@@ -38,9 +38,8 @@ public class Main {
 
     public static void permu(int cnt, int idx) {
         if (cnt == 3) {
-            int[][] copyMap = new int[N + 2][];
             for (int i = 0; i < N + 2; i++) {
-                copyMap[i] = Arrays.copyOf(map[i], M + 2);
+                if (M + 2 >= 0) System.arraycopy(map[i], 0, copyMap[i], 0, M + 2);
             }
             Queue<int[]> q = new ArrayDeque<>();
             for (int i = 1; i <= N; i++) {

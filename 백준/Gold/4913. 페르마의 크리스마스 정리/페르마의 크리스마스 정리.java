@@ -12,8 +12,8 @@ public class Main {
         isPrime[2] = true;
         for (int i = 3; i <= 1000; i += 2) {
             if (isPrime[i]) {
-                for (int j = i; i * j <= 1000000; j += 2) {
-                    isPrime[i * j] = false;
+                for (int j = i * i; j <= 1000000; j += (i << 1)) {
+                    isPrime[j] = false;
                 }
             }
         }

@@ -19,39 +19,37 @@ public class Main {
             NB = Integer.parseInt(st.nextToken());
             PriorityQueue<Train> A = new PriorityQueue<>(Comparator.comparing(a -> a.dep));
             PriorityQueue<Train> B = new PriorityQueue<>(Comparator.comparing(a -> a.dep));
-            PriorityQueue<Time> returnA = new PriorityQueue<>();
-            PriorityQueue<Time> returnB = new PriorityQueue<>();
+            PriorityQueue<Integer> returnA = new PriorityQueue<>();
+            PriorityQueue<Integer> returnB = new PriorityQueue<>();
             for (int i = 0; i < NA; i++) {
                 st = new StringTokenizer(br.readLine(), " :");
-                A.add(new Train(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())));
+                A.add(new Train(Integer.parseInt(st.nextToken()) * 60 + Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()) * 60 + Integer.parseInt(st.nextToken())));
             }
             for (int i = 0; i < NB; i++) {
                 st = new StringTokenizer(br.readLine(), " :");
-                B.add(new Train(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())));
+                B.add(new Train(Integer.parseInt(st.nextToken()) * 60 + Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()) * 60 + Integer.parseInt(st.nextToken())));
             }
             Train fastA = A.peek();
             Train fastB = B.peek();
             int ansA = 0;
             int ansB = 0;
             while (!A.isEmpty() || !B.isEmpty()) {
-                if (fastB != null && (fastA == null || fastA.dep.compareTo(fastB.dep) >= 0)) {
-                    if (!returnB.isEmpty() && returnB.peek().compareTo(fastB.dep) <= 0) {
+                if (fastB != null && (fastA == null || fastA.dep >= fastB.dep)) {
+                    if (!returnB.isEmpty() && returnB.peek() <= fastB.dep) {
                         returnB.poll();
-                    }else{
+                    } else {
                         ansB++;
                     }
-                    fastB.arr.returnTrain();
-                    returnA.add(fastB.arr);
+                    returnA.add(fastB.arr + T);
                     B.poll();
                     fastB = B.peek();
-                } else if (fastA != null && (fastB == null || fastA.dep.compareTo(fastB.dep) < 0)) {
-                    if (!returnA.isEmpty() && returnA.peek().compareTo(fastA.dep) <= 0) {
+                } else if (fastA != null && (fastB == null || fastA.dep < fastB.dep)) {
+                    if (!returnA.isEmpty() && returnA.peek() <= fastA.dep) {
                         returnA.poll();
-                    }else{
+                    } else {
                         ansA++;
                     }
-                    fastA.arr.returnTrain();
-                    returnB.add(fastA.arr);
+                    returnB.add(fastA.arr + T);
                     A.poll();
                     fastA = A.peek();
                 }
@@ -61,40 +59,13 @@ public class Main {
         System.out.println(sb);
     }
 
-    public static class Time implements Comparable<Time> {
-        int hour;
-        int min;
-
-        public Time(int hour, int min) {
-            this.hour = hour;
-            this.min = min;
-        }
-
-        public void returnTrain() {
-            this.min += T;
-            if (this.min >= 60) {
-                this.hour++;
-                this.min -= 60;
-            }
-        }
-
-        @Override
-        public int compareTo(Time o) {
-            if (this.hour == o.hour) {
-                return this.min - o.min;
-            } else {
-                return this.hour - o.hour;
-            }
-        }
-    }
-
     public static class Train {
-        Time dep;
-        Time arr;
+        int dep;
+        int arr;
 
-        public Train(int depHour, int depMin, int arrHour, int arrMin) {
-            this.dep = new Time(depHour, depMin);
-            this.arr = new Time(arrHour, arrMin);
+        public Train(int dep, int arr) {
+            this.dep = dep;
+            this.arr = arr;
         }
     }
 }

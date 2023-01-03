@@ -1,134 +1,94 @@
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.StringTokenizer;
 
 public class Main {
-    static int N, Q, M;
-    static int map[][];
-    static int L[];
-    static boolean visited[][];
-    static int iceCnt; // 덩어리가 차지하는 칸 개수
+    private static int N;
+    private static int[][] map;
+    private static int[][] tmp;
+    private static final int[] dr = {-1, 0, 1, 0};
+    private static final int[] dc = {0, -1, 0, 1};
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-
-        N = Integer.parseInt(st.nextToken());
-        Q = Integer.parseInt(st.nextToken()); // 파이어스톰 시전 회수
-        M = (int) Math.pow(2, N); // M=2^N
-
-        map = new int[M][M];
-        visited = new boolean[M][M];
-        L = new int[Q];
-
-        for (int i = 0; i < M; i++) {
-            st = new StringTokenizer(br.readLine());
-            for (int j = 0; j < M; j++)
+        StringTokenizer st = new StringTokenizer(br.readLine(), " ");
+        N = 1 << Integer.parseInt(st.nextToken());
+        int Q = Integer.parseInt(st.nextToken());
+        map = new int[N + 2][N + 2];
+        tmp = new int[N + 2][N + 2];
+        for (int i = 1; i <= N; i++) {
+            st = new StringTokenizer(br.readLine(), " ");
+            for (int j = 1; j <= N; j++) {
                 map[i][j] = Integer.parseInt(st.nextToken());
-        }
-
-        st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < Q; i++)
-            L[i] = Integer.parseInt(st.nextToken());
-
-        for (int i = 0; i < Q; i++) { // Q번의 파이어스톰 실행
-            FireStorm(L[i]);
-        }
-
-        // 1.남아있는 얼음 양
-        int sum = 0;
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                sum += map[i][j];
+                tmp[i][j] = map[i][j];
             }
         }
-        // 2. 가장 큰 덩어리가 차지하는 개수
-        int res = 0;
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++) {
-                if (!visited[i][j] && map[i][j] != 0) {
-                    iceCnt = 1;
-                    dfs(i, j);
-                    res = Math.max(res, iceCnt);
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < Q; i++) {
+            rotate(1 << Integer.parseInt(st.nextToken()));
+            melt();
+        }
+        int sum = 0, biggest = 0;
+        boolean[][] visit = new boolean[N + 2][N + 2];
+        for (int i = 1; i <= N; i++) {
+            for (int j = 1; j <= N; j++) {
+                if (visit[i][j] || map[i][j] == 0) continue;
+                int count = 1;
+                Queue<int[]> q = new ArrayDeque<>();
+                q.add(new int[]{i, j});
+                visit[i][j] = true;
+                while (!q.isEmpty()) {
+                    int[] cur = q.poll();
+                    sum += map[cur[0]][cur[1]];
+                    for (int k = 0; k < 4; k++) {
+                        int[] next = new int[]{cur[0] + dr[k], cur[1] + dc[k]};
+                        if (visit[next[0]][next[1]] || map[next[0]][next[1]] == 0) continue;
+                        count++;
+                        visit[next[0]][next[1]] = true;
+                        q.add(next);
+                    }
                 }
+                if (biggest < count) biggest = count;
             }
         }
         System.out.println(sum);
-        System.out.println(res);
+        System.out.println(biggest);
     }
 
-    private static void dfs(int x, int y) { // 얼음 덩어리 개수
-        visited[x][y] = true;
-        for (int i = 0; i < 4; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            if (nx < 0 || nx >= M || ny < 0 || ny >= M)
-                continue;
-            if (!visited[nx][ny] && map[nx][ny] > 0) {
-                dfs(nx, ny);
-                iceCnt++;
-
-            }
-        }
-    }
-
-    private static void FireStorm(int l) { // 파이어 스톰
-
-        int K = (int) Math.pow(2, l); // K = 2^l
-
-        int[][] copy = copy(map);
-        for (int i = 0; i < M; i = i + K) { // KxK 크기의 격자 90도 회전
-            for (int j = 0; j < M; j = j + K) {
-                rotate(i, j, K, copy);
-            }
-        }
-        decreaseIce(); // 회전 끝나면 얼음 줄이기 시작
-    }
-
-    static int dx[] = { -1, 1, 0, 0 };
-    static int dy[] = { 0, 0, -1, 1 };
-
-    private static void decreaseIce() { // 얼음 줄이기
-        List<int[]> list = new ArrayList<>();
-
-        for (int x = 0; x < M; x++) {
-            for (int y = 0; y < M; y++) {
-                int cnt = 0; // 얼음이 있는 칸 수
-                for (int i = 0; i < 4; i++) {
-                    int nx = x + dx[i];
-                    int ny = y + dy[i];
-                    if (nx < 0 || nx >= M || ny < 0 || ny >= M)
-                        continue;
-                    if (map[nx][ny] > 0)
-                        cnt++;
+    public static void rotate(int size) {
+        if (size == 1) return;
+        for (int i = 1; i <= N; i += size) {
+            for (int j = 1; j <= N; j += size) {
+                for (int k = 0; k < size; k++) {
+                    for (int l = 0; l < size; l++) {
+                        tmp[i + l][j + size - k - 1] = map[i + k][j + l];
+                    }
                 }
-                if (cnt < 3) // 얼음있는 칸이 3칸 미만이면
-                    list.add(new int[] { x, y });
             }
-
         }
-        for (int i = 0; i < list.size(); i++) {
-            int[] cur = list.get(i);
-            if (map[cur[0]][cur[1]] > 0) {
-                map[cur[0]][cur[1]] -= 1;
-            }
+        for (int i = 1; i <= N; i++) {
+            if (N >= 0) System.arraycopy(tmp[i], 1, map[i], 1, N);
         }
     }
 
-    private static void rotate(int x, int y, int k, int[][] copy) { // 시계방향 90도 회전
-
-        for (int i = 0; i < k; i++) {
-            for (int j = 0; j < k; j++) {
-                map[x + j][y + k - 1 - i] = copy[x + i][y + j];
+    public static void melt() {
+        for (int i = 1; i <= N; i++) {
+            for (int j = 1; j <= N; j++) {
+                if (map[i][j] == 0) continue;
+                int count = 0;
+                for (int k = 0; k < 4; k++) {
+                    if (map[i + dr[k]][j + dc[k]] == 0 && ++count > 1) {
+                        tmp[i][j]--;
+                        break;
+                    }
+                }
             }
         }
-    }
-
-    private static int[][] copy(int[][] map) {
-        int data[][] = new int[M][M];
-        for (int i = 0; i < M; i++) {
-            for (int j = 0; j < M; j++)
-                data[i][j] = map[i][j];
+        for (int i = 1; i <= N; i++) {
+            if (N >= 0) System.arraycopy(tmp[i], 1, map[i], 1, N);
         }
-        return data;
     }
 }

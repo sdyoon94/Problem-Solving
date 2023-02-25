@@ -1,17 +1,10 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.StringTokenizer;
-
 public class Main {
     public static void main(String[] args) throws Exception {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        int N = Integer.parseInt(st.nextToken());
-        int S = Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
-        int GCD = Math.abs(S - Integer.parseInt(st.nextToken()));
+        int N = read();
+        int S = read();
+        int GCD = Math.abs(S - read());
         for (int i = 1; i < N; i++) {
-            GCD = GCD(GCD, Math.abs(S - Integer.parseInt(st.nextToken())));
+            GCD = GCD(GCD, Math.abs(S - read()));
         }
         System.out.println(GCD);
     }
@@ -19,5 +12,11 @@ public class Main {
     public static int GCD(int a, int b) {
         if (b == 0) return a;
         return GCD(b, a % b);
+    }
+
+    static int read() throws Exception {
+        int c, n = System.in.read() & 15;
+        while ((c = System.in.read()) > 32) n = (n << 3) + (n << 1) + (c & 15);
+        return n;
     }
 }
